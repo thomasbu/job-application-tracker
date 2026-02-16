@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
@@ -12,10 +12,17 @@ import { User } from '../models/auth/user';
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
 
-  constructor(
-    private http: HttpClient,
-    private tokenService: TokenService,
-  ) {}
+  // Signal réactif pour le user actuel
+  private _currentUser = signal<User | null>(null);
+
+  // Expose en lecture seule
+  currentUser = this._currentUser.asReadonly();
+
+  constructor(private http: HttpClient, private tokenService: TokenService) {
+    // Charge le user au démarrage depuis localStorage
+    const storedUser = this.tokenService.getUser();
+    this._currentUser.set(storedUser);
+  }
 
   register(request: RegisterRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, request);
@@ -30,25 +37,27 @@ export class AuthService {
       tap((response) => {
         this.tokenService.setTokens(response.accessToken, response.refreshToken);
         this.tokenService.setUser(response.user);
-      }),
+        this._currentUser.set(response.user); // ← MET À JOUR LE SIGNAL
+      })
     );
   }
 
   logout(): Observable<any> {
     return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
-      tap(() => this.tokenService.removeTokens()),
+      tap(() => {
+        this.tokenService.removeTokens();
+        this._currentUser.set(null); // ← RÉINITIALISE LE SIGNAL
+      })
     );
   }
 
   refreshToken(): Observable<{ accessToken: string }> {
     const refreshToken = this.tokenService.getRefreshToken();
-    return this.http
-      .post<{ accessToken: string }>(`${this.apiUrl}/refresh`, { refreshToken })
-      .pipe(
-        tap((response) => {
-          localStorage.setItem('access_token', response.accessToken);
-        }),
-      );
+    return this.http.post<{ accessToken: string }>(`${this.apiUrl}/refresh`, { refreshToken }).pipe(
+      tap((response) => {
+        localStorage.setItem('access_token', response.accessToken);
+      })
+    );
   }
 
   forgotPassword(email: string): Observable<any> {
@@ -66,10 +75,11 @@ export class AuthService {
   }
 
   getCurrentUser(): User | null {
-    return this.tokenService.getUser();
+    return this._currentUser();
   }
 
   clearSession(): void {
     this.tokenService.removeTokens();
+    this._currentUser.set(null); // ← RÉINITIALISE LE SIGNAL
   }
 }

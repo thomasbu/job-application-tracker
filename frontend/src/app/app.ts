@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './services/auth';
 
@@ -15,7 +15,8 @@ export class AppComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  user = computed(() => this.authService.getCurrentUser());
+  // Utilise directement le signal réactif du service
+  user = this.authService.currentUser;
 
   get isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
