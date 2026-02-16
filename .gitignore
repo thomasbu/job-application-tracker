@@ -1,5 +1,19 @@
-# === BACKEND (Java/Spring Boot) ===
+# === SECRETS / ENVIRONMENT VARIABLES (PRIORITY) ===
+.env
+*.env
+.env.local
+.env.*.local
+backend/.env
+backend/*.env
+frontend/.env
+frontend/*.env
 
+# === APPLICATION SECRETS ===
+backend/src/main/resources/application-dev.properties
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-prod.properties
+
+# === BACKEND (Java/Spring Boot) ===
 backend/target/
 backend/.mvn/
 backend/mvnw
@@ -22,7 +36,6 @@ backend/*.log
 backend/uploads/
 
 # === FRONTEND (Angular) ===
-
 frontend/node_modules/
 frontend/dist/
 frontend/.angular/
@@ -33,15 +46,10 @@ frontend/.idea/
 frontend/*.iml
 frontend/.vscode/
 
-# Environment
-frontend/.env
-frontend/.env.local
-
 # Build
 frontend/build/
 
 # === GLOBAL ===
-
 # Screenshots (on les ajoutera manuellement)
 # screenshots/
 
