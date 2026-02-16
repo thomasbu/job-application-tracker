@@ -1,0 +1,10 @@
+@use 'auth-shared' as *;
+
+.spinner-lg {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--primary);
+  margin: 0 auto var(--spacing-md);
+  display: block;
+}

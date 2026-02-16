@@ -1,0 +1,52 @@
+# === BACKEND (Java/Spring Boot) ===
+
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+backend/HELP.md
+
+# IDE
+backend/.idea/
+backend/*.iml
+backend/.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+backend/*.log
+
+# Uploads (fichiers users - ne pas commit)
+backend/uploads/
+
+# === FRONTEND (Angular) ===
+
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.nx/
+
+# IDE
+frontend/.idea/
+frontend/*.iml
+frontend/.vscode/
+
+# Environment
+frontend/.env
+frontend/.env.local
+
+# Build
+frontend/build/
+
+# === GLOBAL ===
+
+# Screenshots (on les ajoutera manuellement)
+# screenshots/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~

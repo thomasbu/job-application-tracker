@@ -1,0 +1,55 @@
+<div class="timeline">
+  @if (history.length === 0) {
+  <p class="no-history">No status history available</p>
+  } @else { @for (entry of history; track entry.id; let isLast = $last) {
+  <div class="timeline-item">
+    <!-- Icon -->
+    <div class="timeline-icon" [class]="'icon-' + (entry.status | statusColor)">
+      @switch (entry.status) { @case ('SENT') {
+      <svg class="icon" viewBox="0 0 24 24">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+      } @case ('INTERVIEW') {
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+      } @case ('REJECTED') {
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+      } @case ('ACCEPTED') {
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      } }
+    </div>
+
+    <!-- Line (not for last item) -->
+    @if (!isLast) {
+    <div class="timeline-line"></div>
+    }
+
+    <!-- Content -->
+    <div class="timeline-content">
+      <div class="timeline-header">
+        <span class="badge badge-{{ entry.status | statusColor }}">
+          {{ entry.status | statusLabel }}
+        </span>
+        <span class="timeline-date">
+          {{ entry.changedAt | date : 'MMM d, y - HH:mm' }}
+        </span>
+      </div>
+      @if (entry.notes) {
+      <p class="timeline-notes">{{ entry.notes }}</p>
+      }
+    </div>
+  </div>
+  } }
+</div>

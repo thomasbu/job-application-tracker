@@ -1,0 +1,134 @@
+<div class="auth-container">
+  <div class="auth-card card">
+    <div class="auth-header">
+      <svg class="auth-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="8.5" cy="7" r="4"></circle>
+        <line x1="20" y1="8" x2="20" y2="14"></line>
+        <line x1="23" y1="11" x2="17" y2="11"></line>
+      </svg>
+      <h1>Create account</h1>
+      <p>Start tracking your job applications</p>
+    </div>
+
+    @if (success()) {
+      <div class="alert alert-success">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Registration successful! Check your email to confirm your account.
+      </div>
+      <div class="auth-footer">
+        <a routerLink="/login" class="link">Back to login</a>
+      </div>
+    } @else {
+      @if (errorMessage()) {
+        <div class="alert alert-error">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="label" for="firstName">First name</label>
+            <input
+              type="text"
+              id="firstName"
+              class="input"
+              [(ngModel)]="formData.firstName"
+              name="firstName"
+              placeholder="John"
+              required
+              [disabled]="loading()"
+              autocomplete="given-name"
+            />
+          </div>
+          <div class="form-group">
+            <label class="label" for="lastName">Last name</label>
+            <input
+              type="text"
+              id="lastName"
+              class="input"
+              [(ngModel)]="formData.lastName"
+              name="lastName"
+              placeholder="Doe"
+              required
+              [disabled]="loading()"
+              autocomplete="family-name"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            class="input"
+            [(ngModel)]="formData.email"
+            name="email"
+            placeholder="you@example.com"
+            required
+            [disabled]="loading()"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="password">Password</label>
+          <div class="input-wrapper">
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              id="password"
+              class="input"
+              [(ngModel)]="formData.password"
+              name="password"
+              placeholder="Min. 8 characters"
+              required
+              minlength="8"
+              [disabled]="loading()"
+              autocomplete="new-password"
+            />
+            <button type="button" class="toggle-password" (click)="togglePassword()" tabindex="-1" aria-label="Toggle password visibility">
+              @if (showPassword()) {
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              } @else {
+                <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              }
+            </button>
+          </div>
+          <span class="password-hint">Must be at least 8 characters</span>
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="confirmPassword">Confirm password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            class="input"
+            [(ngModel)]="confirmPassword"
+            name="confirmPassword"
+            placeholder="Confirm your password"
+            required
+            [disabled]="loading()"
+            autocomplete="new-password"
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" [disabled]="loading()">
+          @if (loading()) {
+            <span class="spinner"></span>
+            Creating account...
+          } @else {
+            Create account
+          }
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <span>Already have an account?</span>
+        <a routerLink="/login" class="link">Sign in</a>
+      </div>
+    }
+  </div>
+</div>

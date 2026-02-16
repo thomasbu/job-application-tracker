@@ -1,0 +1,268 @@
+<div class="dialog-overlay" (mousedown)="onOverlayMouseDown($event)">
+  <div class="dialog" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="dialog-header">
+      <h2 class="dialog-title">@if (isEdit) { Edit Application } @else { New Application }</h2>
+      <button class="btn btn-icon btn-ghost" (click)="onCancel()">
+        <svg class="icon" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="dialog-content">
+      <form (ngSubmit)="onSubmit()">
+        <!-- Company -->
+        <div class="form-group">
+          <label class="label" for="company"> Company <span class="required">*</span> </label>
+          <input
+            type="text"
+            id="company"
+            class="input"
+            [(ngModel)]="formData.company"
+            name="company"
+            placeholder="e.g. Google"
+            required
+            [disabled]="isLoading()"
+          />
+        </div>
+
+        <!-- Position -->
+        <div class="form-group">
+          <label class="label" for="position"> Position <span class="required">*</span> </label>
+          <input
+            type="text"
+            id="position"
+            class="input"
+            [(ngModel)]="formData.position"
+            name="position"
+            placeholder="e.g. Full Stack Developer"
+            required
+            [disabled]="isLoading()"
+          />
+        </div>
+
+        <!-- Date and Status Row -->
+        <div class="form-row">
+          <!-- Application Date -->
+          <div class="form-group">
+            <label class="label" for="applicationDate">
+              Application Date <span class="required">*</span>
+            </label>
+            <input
+              type="date"
+              id="applicationDate"
+              class="input"
+              [(ngModel)]="formData.applicationDate"
+              name="applicationDate"
+              required
+              [disabled]="isLoading()"
+            />
+          </div>
+
+          <!-- Status -->
+          <div class="form-group">
+            <label class="label" for="status"> Status <span class="required">*</span> </label>
+            <select
+              id="status"
+              class="input"
+              [(ngModel)]="formData.currentStatus"
+              name="status"
+              required
+              [disabled]="isLoading()"
+            >
+              @for (status of statuses; track status) {
+              <option [value]="status">{{ statusLabels[status] }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label class="label" for="notes">Notes</label>
+          <textarea
+            id="notes"
+            class="input"
+            [(ngModel)]="formData.notes"
+            name="notes"
+            placeholder="Add notes about this application..."
+            rows="3"
+            [disabled]="isLoading()"
+          ></textarea>
+        </div>
+
+        <!-- Status History Section (edit mode only) -->
+        @if (isEdit && application?.statusHistory?.length) {
+        <div class="history-section">
+          <h3 class="section-title">Status History</h3>
+          <app-status-timeline [history]="application!.statusHistory!"></app-status-timeline>
+        </div>
+        }
+
+        <!-- Documents Section -->
+        <div class="documents-section">
+          <h3 class="section-title">
+            @if (isEdit) { Documents } @else { Add Documents (Optional) }
+          </h3>
+
+          <!-- Existing Documents (edit mode only) -->
+          @if (isEdit && application?.id) { @if (documents().length > 0) {
+          <div class="documents-list">
+            @for (doc of documents(); track doc.id) {
+            <div class="document-item">
+              <div class="document-info">
+                <svg class="icon icon-doc" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <div class="document-details">
+                  <span class="document-name">{{ doc.originalFilename }}</span>
+                  <span class="document-meta">{{ formatFileSize(doc.fileSize) }}</span>
+                </div>
+              </div>
+              <div class="document-actions">
+                <button
+                  type="button"
+                  class="btn btn-icon btn-ghost"
+                  (click)="downloadDocument(doc)"
+                  title="Download"
+                >
+                  <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-icon btn-ghost"
+                  (click)="deleteDocument(doc)"
+                  title="Delete"
+                >
+                  <svg class="icon" viewBox="0 0 24 24" stroke="#ef4444">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path
+                      d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            }
+          </div>
+          } @else {
+          <p class="no-documents">No documents uploaded yet</p>
+          } }
+
+          <!-- Upload Section (always visible) -->
+          <div class="upload-section">
+            <label class="label">
+              @if (isEdit) { Add More Documents } @else { Select Documents }
+            </label>
+            <p class="help-text">
+              @if (isEdit) { PDF, JPG, PNG, DOC, or DOCX (max 10MB each) } @else { You can add
+              documents now or later. PDF, JPG, PNG, DOC, or DOCX (max 10MB each) }
+            </p>
+
+            @if (selectedFiles().length === 0) {
+            <label for="fileInput" class="file-upload-label">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Choose files</span>
+            </label>
+            } @else {
+            <div class="selected-files">
+              <div class="selected-files-header">
+                <span>{{ selectedFiles().length }} file(s) selected</span>
+                <button type="button" class="btn btn-sm btn-ghost" (click)="clearSelectedFiles()">
+                  Clear
+                </button>
+              </div>
+              <div class="selected-files-list">
+                @for (file of selectedFiles(); track file.name) {
+                <div class="selected-file-item">
+                  <svg class="icon icon-success" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>{{ file.name }}</span>
+                  <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                </div>
+                }
+              </div>
+
+              <!-- Upload button only in edit mode -->
+              @if (isEdit && application?.id) {
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                (click)="uploadSelectedFiles()"
+                [disabled]="isUploadingDocs()"
+              >
+                @if (isUploadingDocs()) {
+                <span class="spinner"></span>
+                Uploading... } @else { Upload {{ selectedFiles().length }} file(s) }
+              </button>
+              } @else {
+              <p class="upload-info">
+                <svg class="icon icon-info" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                These files will be uploaded after creating the application
+              </p>
+              }
+            </div>
+            }
+
+            <input
+              type="file"
+              id="fileInput"
+              class="file-input"
+              (change)="onFilesSelected($event)"
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              multiple
+              [disabled]="isUploadingDocs()"
+            />
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="dialog-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="onCancel()"
+            [disabled]="isLoading()"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading()">
+            @if (isLoading()) {
+            <span class="spinner"></span>
+            Saving... } @else { @if (isEdit) { Update } @else { Create } }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Document Dialog -->
+@if (showConfirmDeleteDoc()) {
+<app-confirm-dialog
+  title="Delete Document"
+  [message]="`Are you sure you want to delete '${documentToDelete()?.originalFilename}'?`"
+  confirmText="Delete"
+  cancelText="Cancel"
+  [isDanger]="true"
+  (confirm)="confirmDeleteDocument()"
+  (cancel)="cancelDeleteDocument()"
+/>
+}
