@@ -40,3 +40,8 @@ build/
 
 # Application properties with secrets
 application-*.properties
+
+# Environment-specific configuration (contains secrets)
+application-dev.properties
+application-local.properties
+application-prod.properties
