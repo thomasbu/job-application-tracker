@@ -19,20 +19,6 @@ backend/.mvn/
 backend/mvnw
 backend/mvnw.cmd
 backend/HELP.md
-
-# IDE
-backend/.idea/
-backend/*.iml
-backend/.vscode/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-backend/*.log
-
-# Uploads (fichiers users - ne pas commit)
 backend/uploads/
 
 # === FRONTEND (Angular) ===
@@ -40,20 +26,23 @@ frontend/node_modules/
 frontend/dist/
 frontend/.angular/
 frontend/.nx/
-
-# IDE
-frontend/.idea/
-frontend/*.iml
-frontend/.vscode/
-
-# Build
 frontend/build/
 
-# === GLOBAL ===
-# Screenshots (on les ajoutera manuellement)
-# screenshots/
+# === IDE ===
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
 
-# Temporary files
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === LOGS ===
+*.log
+
+# === TEMPORARY FILES ===
 *.tmp
 *.temp
 *.swp
