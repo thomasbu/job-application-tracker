@@ -47,3 +47,14 @@ Thumbs.db
 *.temp
 *.swp
 *~
+
+# === CLAUDE CODE ===
+.claude/
+**/.claude/
+
+# === TASK / PLANNING FILES ===
+TASK-*.md
+**/TASK-*.md
+
+# === PERSONAL EXERCISES ===
+**/exo_interview/

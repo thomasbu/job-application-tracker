@@ -1,0 +1,85 @@
+<div class="container">
+  <header class="header">
+    <div class="header-content">
+      <div>
+        <div class="breadcrumb">
+          <a routerLink="/interview-prep">Interview Prep</a>
+          <span>/</span>
+          <span>Skills Matrix</span>
+        </div>
+        <h1 class="title">Skills Matrix</h1>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateForm()">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add Skill
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading-state"><p>Loading skills...</p></div>
+  } @else if (skills().length === 0) {
+    <div class="card empty-state">
+      <h3>No skills tracked yet</h3>
+      <p>Add skills to assess your proficiency levels</p>
+      <button class="btn btn-primary" (click)="openCreateForm()">Add Skill</button>
+    </div>
+  } @else {
+    <div class="skills-grid">
+      @for (skill of skills(); track skill.id) {
+        <div class="skill-card card">
+          <div class="skill-header">
+            <h3>{{ skill.name }}</h3>
+            <button class="btn btn-icon btn-ghost btn-sm" (click)="deleteSkill(skill.id)" title="Delete">
+              <svg class="icon" viewBox="0 0 24 24" stroke="#ef4444"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <span class="badge badge-primary skill-category">{{ categoryLabels[skill.category] }}</span>
+          <div class="skill-level">
+            <span class="level-label">Level: {{ skill.level }} / 5</span>
+            <div class="star-rating">
+              @for (star of [1, 2, 3, 4, 5]; track star) {
+                <button
+                  class="star-btn"
+                  [class.filled]="star <= skill.level"
+                  (click)="updateLevel(skill, star)"
+                >
+                  {{ star <= skill.level ? '\u2605' : '\u2606' }}
+                </button>
+              }
+            </div>
+          </div>
+          <div class="skill-bar">
+            <div class="skill-bar-fill" [style.width.%]="skill.level * 20"></div>
+          </div>
+          @if (skill.notes) {
+            <p class="skill-notes">{{ skill.notes }}</p>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (showForm()) {
+    <app-modal title="Add Skill" size="sm" (closeModal)="closeForm()">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="label">Skill Name</label>
+          <input class="input" [ngModel]="formData().name" (ngModelChange)="updateFormField('name', $event)" placeholder="e.g. Spring Boot, React..." />
+        </div>
+        <div class="form-group">
+          <label class="label">Category</label>
+          <select class="input" [ngModel]="formData().category" (ngModelChange)="updateFormField('category', $event)">
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ categoryLabels[cat] }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveSkill()" [disabled]="!formData().name">Create</button>
+      </div>
+    </app-modal>
+  }
+</div>

@@ -1,0 +1,118 @@
+<div class="container">
+  <header class="header">
+    <div class="header-content">
+      <div>
+        <div class="breadcrumb">
+          <a routerLink="/interview-prep">Interview Prep</a>
+          <span>/</span>
+          <span>Technical Questions</span>
+        </div>
+        <h1 class="title">Technical Questions</h1>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateForm()">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        New Question
+      </button>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label class="label" for="categoryFilter">Category</label>
+        <select id="categoryFilter" class="input" [value]="selectedCategory()" (change)="onCategoryChange($event)">
+          <option value="ALL">All Categories</option>
+          @for (cat of categories; track cat) {
+            <option [value]="cat">{{ categoryLabels[cat] }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-info">
+        <span class="badge badge-primary">{{ filteredQuestions().length }} questions</span>
+      </div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading-state"><p>Loading questions...</p></div>
+  } @else if (filteredQuestions().length === 0) {
+    <div class="card empty-state">
+      <h3>No questions found</h3>
+      <p>Add technical interview questions to practice</p>
+      <button class="btn btn-primary" (click)="openCreateForm()">Add Question</button>
+    </div>
+  } @else {
+    <div class="questions-list">
+      @for (q of filteredQuestions(); track q.id) {
+        <div class="question-card card" [class.expanded]="expandedId() === q.id">
+          <div class="question-header" (click)="toggleExpand(q.id)">
+            <div class="question-main">
+              <svg class="expand-icon" viewBox="0 0 24 24" [class.rotated]="expandedId() === q.id">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+              <span class="question-text">{{ q.question }}</span>
+            </div>
+            <div class="question-meta">
+              <span class="badge badge-primary">{{ categoryLabels[q.category] }}</span>
+              <span class="confidence-stars">{{ getConfidenceStars(q.confidenceLevel) }}</span>
+            </div>
+          </div>
+
+          @if (expandedId() === q.id) {
+            <div class="question-body">
+              <div class="answer-section">
+                <h4>Answer</h4>
+                <p>{{ q.answer }}</p>
+              </div>
+              <div class="question-actions-row">
+                <div class="confidence-rating">
+                  <span class="confidence-label">Confidence:</span>
+                  @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <button
+                      class="star-btn"
+                      [class.filled]="star <= q.confidenceLevel"
+                      (click)="rateConfidence(q.id, star); $event.stopPropagation()"
+                    >
+                      {{ star <= q.confidenceLevel ? '\u2605' : '\u2606' }}
+                    </button>
+                  }
+                </div>
+                <div class="actions">
+                  <button class="btn btn-sm btn-ghost" (click)="openEditForm(q); $event.stopPropagation()">Edit</button>
+                  <button class="btn btn-sm btn-ghost" style="color: var(--danger)" (click)="deleteQuestion(q.id); $event.stopPropagation()">Delete</button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (showForm()) {
+    <app-modal [title]="editingQuestion() ? 'Edit Question' : 'New Question'" (closeModal)="closeForm()">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="label">Question</label>
+          <textarea class="input" rows="3" [ngModel]="formData().question" (ngModelChange)="updateFormField('question', $event)"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="label">Answer</label>
+          <textarea class="input" rows="5" [ngModel]="formData().answer" (ngModelChange)="updateFormField('answer', $event)"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="label">Category</label>
+          <select class="input" [ngModel]="formData().category" (ngModelChange)="updateFormField('category', $event)">
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ categoryLabels[cat] }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveQuestion()" [disabled]="!formData().question || !formData().answer">
+          {{ editingQuestion() ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </app-modal>
+  }
+</div>

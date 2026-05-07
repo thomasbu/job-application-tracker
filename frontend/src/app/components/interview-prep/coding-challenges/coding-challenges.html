@@ -1,0 +1,158 @@
+<div class="container">
+  <header class="header">
+    <div class="header-content">
+      <div>
+        <div class="breadcrumb">
+          <a routerLink="/interview-prep">Interview Prep</a>
+          <span>/</span>
+          <span>Coding Challenges</span>
+        </div>
+        <h1 class="title">Coding Challenges</h1>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateForm()">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        New Challenge
+      </button>
+    </div>
+
+    <div class="stats-row">
+      <div class="mini-stat">
+        <span class="mini-stat-value">{{ stats().total }}</span>
+        <span class="mini-stat-label">Total</span>
+      </div>
+      <div class="mini-stat">
+        <span class="mini-stat-value stat-success">{{ stats().completed }}</span>
+        <span class="mini-stat-label">Completed</span>
+      </div>
+      <div class="mini-stat">
+        <span class="mini-stat-value stat-warning">{{ stats().inProgress }}</span>
+        <span class="mini-stat-label">In Progress</span>
+      </div>
+      <div class="mini-stat">
+        <span class="mini-stat-value stat-muted">{{ stats().todo }}</span>
+        <span class="mini-stat-label">To Do</span>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label class="label" for="statusFilter">Status</label>
+        <select id="statusFilter" class="input" [value]="selectedStatus()" (change)="onStatusFilterChange($event)">
+          <option value="ALL">All Statuses</option>
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ statusLabels[status] }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-info">
+        <span class="badge badge-primary">{{ filteredChallenges().length }} challenges</span>
+      </div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading-state"><p>Loading challenges...</p></div>
+  } @else if (filteredChallenges().length === 0) {
+    <div class="card empty-state">
+      <h3>No challenges found</h3>
+      <p>Start tracking your coding practice</p>
+      <button class="btn btn-primary" (click)="openCreateForm()">Add Challenge</button>
+    </div>
+  } @else {
+    <div class="card table-card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Platform</th>
+              <th>Difficulty</th>
+              <th>Status</th>
+              <th>Link</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (challenge of filteredChallenges(); track challenge.id) {
+              <tr>
+                <td><strong>{{ challenge.name }}</strong></td>
+                <td>{{ challenge.platform }}</td>
+                <td>
+                  <span class="badge" [class.badge-success]="challenge.difficulty === 'EASY'" [class.badge-warning]="challenge.difficulty === 'MEDIUM'" [class.badge-danger]="challenge.difficulty === 'HARD'">
+                    {{ difficultyLabels[challenge.difficulty] }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusClass(challenge.status)">
+                    {{ statusLabels[challenge.status] }}
+                  </span>
+                </td>
+                <td>
+                  @if (challenge.link) {
+                    <a [href]="challenge.link" target="_blank" rel="noopener" class="link-btn">Open</a>
+                  } @else {
+                    <span class="text-muted">-</span>
+                  }
+                </td>
+                <td>
+                  <div class="actions">
+                    @if (challenge.status !== 'COMPLETED') {
+                      <button class="btn btn-sm btn-success-outline" (click)="markCompleted(challenge.id)" title="Mark Complete">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </button>
+                    }
+                    <button class="btn btn-icon btn-ghost" (click)="openEditForm(challenge)" title="Edit">
+                      <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                    <button class="btn btn-icon btn-ghost" (click)="deleteChallenge(challenge.id)" title="Delete">
+                      <svg class="icon" viewBox="0 0 24 24" stroke="#ef4444"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  @if (showForm()) {
+    <app-modal [title]="editingChallenge() ? 'Edit Challenge' : 'New Challenge'" (closeModal)="closeForm()">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="label">Name</label>
+          <input class="input" [ngModel]="formData().name" (ngModelChange)="updateFormField('name', $event)" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="label">Platform</label>
+            <input class="input" [ngModel]="formData().platform" (ngModelChange)="updateFormField('platform', $event)" />
+          </div>
+          <div class="form-group">
+            <label class="label">Difficulty</label>
+            <select class="input" [ngModel]="formData().difficulty" (ngModelChange)="updateFormField('difficulty', $event)">
+              @for (diff of difficulties; track diff) {
+                <option [value]="diff">{{ difficultyLabels[diff] }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="label">Link (optional)</label>
+          <input class="input" [ngModel]="formData().link" (ngModelChange)="updateFormField('link', $event)" placeholder="https://leetcode.com/problems/..." />
+        </div>
+        <div class="form-group">
+          <label class="label">Notes (optional)</label>
+          <textarea class="input" rows="3" [ngModel]="formData().notes" (ngModelChange)="updateFormField('notes', $event)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveChallenge()" [disabled]="!formData().name || !formData().platform">
+          {{ editingChallenge() ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </app-modal>
+  }
+</div>
