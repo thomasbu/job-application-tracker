@@ -116,7 +116,8 @@ export $(cat .env | xargs)
 
 ```bash
 cd backend
-mvn spring-boot:run
+./mvnw spring-boot:run        # Linux/macOS
+.\mvnw.cmd spring-boot:run    # Windows
 ```
 
 API available at `http://localhost:8080`
@@ -130,6 +131,19 @@ npm start
 ```
 
 App available at `http://localhost:4200`
+
+## Running Tests
+
+```bash
+# Backend (17 unit tests)
+cd backend
+.\mvnw.cmd test           # Windows
+./mvnw test               # Linux/macOS
+
+# Frontend (16 unit tests)
+cd frontend
+npm test -- --run
+```
 
 ## API Overview
 
