@@ -36,7 +36,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendPasswordResetEmail(String to, String token) {
-        String resetUrl = frontendUrl + "/reset-password?token=" + token;
+        String resetUrl = frontendUrl + "/auth/reset-password?token=" + token;
         String subject = "Reset your password";
         String htmlContent = "<html><body>"
                 + "<h2>Password Reset Request</h2>"
