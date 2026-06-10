@@ -9,6 +9,10 @@
         </svg>
         Job Tracker
       </span>
+      <div class="navbar-links">
+        <a routerLink="/applications" routerLinkActive="active" class="navbar-link">Applications</a>
+        <a routerLink="/interview-prep" routerLinkActive="active" class="navbar-link">Interview Prep</a>
+      </div>
       <div class="navbar-end">
         @if (user(); as u) {
           <span class="navbar-user">{{ u.firstName }} {{ u.lastName }}</span>

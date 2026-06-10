@@ -31,6 +31,32 @@
   color: var(--primary);
 }
 
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.navbar-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  text-decoration: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+
+  &:hover {
+    color: var(--gray-900);
+    background: var(--gray-100);
+  }
+
+  &.active {
+    color: var(--primary);
+    background: var(--primary-light, #eff6ff);
+  }
+}
+
 .navbar-end {
   display: flex;
   align-items: center;
