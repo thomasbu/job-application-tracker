@@ -2,6 +2,16 @@
 
 A full-stack web application to manage your job search and prepare for technical interviews. Track applications through their lifecycle, attach documents, monitor status history, and use built-in study tools to get ready for interviews.
 
+## Screenshots
+
+| Dashboard | New Application |
+|---|---|
+| ![Dashboard](screenshots/dashboard.png) | ![New Application](screenshots/new-application.png) |
+
+| Interview Prep | Sign In |
+|---|---|
+| ![Interview Prep](screenshots/interview-prep.png) | ![Sign In](screenshots/sign-in.png) |
+
 ## Features
 
 ### Job Application Management
