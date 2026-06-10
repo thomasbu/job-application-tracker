@@ -116,8 +116,8 @@ export $(cat .env | xargs)
 
 ```bash
 cd backend
-./mvnw spring-boot:run        # Linux/macOS
-.\mvnw.cmd spring-boot:run    # Windows
+.\run-dev.bat                 # Windows (loads .env automatically)
+./mvnw spring-boot:run        # Linux/macOS (load .env manually first)
 ```
 
 API available at `http://localhost:8080`
