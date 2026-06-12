@@ -40,6 +40,7 @@ build/
 
 # Application properties with secrets
 application-*.properties
+!src/test/resources/application-test.properties
 
 # Environment-specific configuration (contains secrets)
 application-dev.properties
