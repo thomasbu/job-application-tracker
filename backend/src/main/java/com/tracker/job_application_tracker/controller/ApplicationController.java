@@ -7,12 +7,14 @@ import com.tracker.job_application_tracker.enums.ApplicationStatus;
 import com.tracker.job_application_tracker.model.User;
 import com.tracker.job_application_tracker.service.ApplicationService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/applications")
@@ -25,20 +27,21 @@ public class ApplicationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ApplicationDTO>> getAllApplications(
+    public ResponseEntity<Page<ApplicationDTO>> getAllApplications(
             @RequestParam(required = false) ApplicationStatus status,
+            @PageableDefault(size = 20, sort = "applicationDate", direction = Sort.Direction.DESC) Pageable pageable,
             Authentication authentication
     ) {
         User user = (User) authentication.getPrincipal();
-        List<ApplicationDTO> applications;
+        Page<ApplicationDTO> result;
 
         if (status != null) {
-            applications = applicationService.getApplicationsByStatus(user, status);
+            result = applicationService.getApplicationsByStatus(user, status, pageable);
         } else {
-            applications = applicationService.getAllApplications(user);
+            result = applicationService.getAllApplications(user, pageable);
         }
 
-        return ResponseEntity.ok(applications);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{id}")

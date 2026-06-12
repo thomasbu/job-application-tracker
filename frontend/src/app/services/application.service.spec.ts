@@ -2,8 +2,17 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApplicationService } from './application';
-import { Application, CreateApplicationRequest } from '../models/application';
+import { Application, CreateApplicationRequest, PageResponse } from '../models/application';
 import { ApplicationStatus } from '../enums/application-status';
+
+// Helper : enveloppe un tableau dans le format Page renvoyé par Spring
+const toPage = <T>(content: T[]): PageResponse<T> => ({
+  content,
+  totalElements: content.length,
+  totalPages: 1,
+  number: 0,
+  size: 1000,
+});
 
 /*
  * Tests unitaires pour ApplicationService.
@@ -25,6 +34,10 @@ describe('ApplicationService', () => {
     { id: 1, company: 'Google', position: 'Dev', applicationDate: '2026-01-15', currentStatus: ApplicationStatus.SENT },
     { id: 2, company: 'Meta', position: 'Engineer', applicationDate: '2026-01-20', currentStatus: ApplicationStatus.INTERVIEW },
   ];
+
+  // Matcher pour les GET /api/applications (qui ont des query params page/size)
+  const isGetAll = (req: { url: string; method: string }) =>
+    req.url === API_URL && req.method === 'GET';
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -59,16 +72,18 @@ describe('ApplicationService', () => {
       expect(result[0].company).toBe('Google');
     });
 
-    // Intercepte la requête et simule la réponse
-    const req = httpMock.expectOne(API_URL);
+    // Intercepte la requête paginée et simule la réponse Spring Page
+    const req = httpMock.expectOne(isGetAll);
     expect(req.request.method).toBe('GET');
-    req.flush(mockApplications);
+    expect(req.request.params.get('page')).toBe('0');
+    expect(req.request.params.get('size')).toBe('1000');
+    req.flush(toPage(mockApplications));
   });
 
   it('should return cached data on second call within TTL', () => {
     // ARRANGE — premier appel qui remplit le cache
     service.getAllApplications().subscribe();
-    httpMock.expectOne(API_URL).flush(mockApplications);
+    httpMock.expectOne(isGetAll).flush(toPage(mockApplications));
 
     // ACT — deuxième appel dans les 30s (cache hit)
     service.getAllApplications().subscribe(result => {
@@ -77,13 +92,27 @@ describe('ApplicationService', () => {
     });
 
     // Aucune requête HTTP ne doit être faite cette fois
-    httpMock.expectNone(API_URL);
+    httpMock.expectNone(isGetAll);
+  });
+
+  it('should invalidate cache and propagate error on network failure', () => {
+    let errorReceived = false;
+
+    // Premier appel — le serveur répond avec une erreur 500
+    service.getAllApplications().subscribe({ error: () => (errorReceived = true) });
+    httpMock.expectOne(isGetAll).flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
+
+    expect(errorReceived).toBe(true);
+
+    // Le cache doit être vide — le prochain appel refait bien une requête HTTP
+    service.getAllApplications().subscribe({ error: () => {} });
+    httpMock.expectOne(isGetAll).flush(toPage(mockApplications));
   });
 
   it('should invalidate cache after createApplication', () => {
     // ARRANGE — on remplit le cache
     service.getAllApplications().subscribe();
-    httpMock.expectOne(API_URL).flush(mockApplications);
+    httpMock.expectOne(isGetAll).flush(toPage(mockApplications));
 
     // ACT — on crée une candidature (doit invalider le cache)
     const newApp: CreateApplicationRequest = {
@@ -97,9 +126,9 @@ describe('ApplicationService', () => {
 
     // ASSERT — le prochain getAllApplications doit refaire un appel HTTP
     service.getAllApplications().subscribe();
-    const req = httpMock.expectOne(API_URL);
+    const req = httpMock.expectOne(isGetAll);
     expect(req.request.method).toBe('GET');
-    req.flush(mockApplications);
+    req.flush(toPage(mockApplications));
   });
 
   // =========================================================
@@ -158,7 +187,7 @@ describe('ApplicationService', () => {
   it('should invalidate cache after deleteApplication', () => {
     // ARRANGE — on remplit le cache
     service.getAllApplications().subscribe();
-    httpMock.expectOne(API_URL).flush(mockApplications);
+    httpMock.expectOne(isGetAll).flush(toPage(mockApplications));
 
     // ACT — suppression
     service.deleteApplication(1).subscribe();
@@ -166,8 +195,8 @@ describe('ApplicationService', () => {
 
     // ASSERT — cache invalidé, prochain appel refait une requête HTTP
     service.getAllApplications().subscribe();
-    const req = httpMock.expectOne(API_URL);
+    const req = httpMock.expectOne(isGetAll);
     expect(req.request.method).toBe('GET');
-    req.flush([mockApplications[1]]);
+    req.flush(toPage([mockApplications[1]]));
   });
 });

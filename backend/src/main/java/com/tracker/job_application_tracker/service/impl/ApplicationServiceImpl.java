@@ -13,6 +13,8 @@ import com.tracker.job_application_tracker.repository.ApplicationRepository;
 import com.tracker.job_application_tracker.service.ApplicationService;
 import com.tracker.job_application_tracker.service.DocumentService;
 import com.tracker.job_application_tracker.service.StatusHistoryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,18 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<ApplicationDTO> getAllApplications(User user, Pageable pageable) {
+        return applicationRepository.findByUserId(user.getId(), pageable)
+                .map(this::convertToDTO);
+    }
+
+    @Override
+    public Page<ApplicationDTO> getApplicationsByStatus(User user, ApplicationStatus status, Pageable pageable) {
+        return applicationRepository.findByUserIdAndCurrentStatus(user.getId(), status, pageable)
+                .map(this::convertToDTO);
     }
 
     @Override
