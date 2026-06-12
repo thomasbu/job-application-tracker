@@ -6,6 +6,9 @@ import com.tracker.job_application_tracker.dto.UpdateApplicationRequest;
 import com.tracker.job_application_tracker.enums.ApplicationStatus;
 import com.tracker.job_application_tracker.model.User;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface ApplicationService {
@@ -13,6 +16,10 @@ public interface ApplicationService {
     List<ApplicationDTO> getAllApplications(User user);
 
     List<ApplicationDTO> getApplicationsByStatus(User user, ApplicationStatus status);
+
+    Page<ApplicationDTO> getAllApplications(User user, Pageable pageable);
+
+    Page<ApplicationDTO> getApplicationsByStatus(User user, ApplicationStatus status, Pageable pageable);
 
     ApplicationDTO getApplicationById(User user, Long id);
 

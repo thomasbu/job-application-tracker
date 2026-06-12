@@ -1,9 +1,10 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, tap, delay } from 'rxjs';
+import { Observable, of, tap, delay, map } from 'rxjs';
 import {
   Application,
   CreateApplicationRequest,
+  PageResponse,
   UpdateApplicationRequest,
 } from '../models/application';
 import { ApplicationStatus } from '../enums/application-status';
@@ -27,12 +28,14 @@ export class ApplicationService {
     // Cache hit
     if (this.applicationsCache() && now - this.cacheTimestamp < this.CACHE_TTL) {
       console.log('📦 Cache hit - returning cached data');
-      return of(this.applicationsCache()!).pipe(delay(0)); // ← CORRIGÉ
+      return of(this.applicationsCache()!).pipe(delay(0));
     }
 
-    // Cache miss
+    // Cache miss — size=1000 to load all and keep client-side sort/filter/pagination
     console.log('🌐 Cache miss - fetching from API');
-    return this.http.get<Application[]>(this.apiUrl).pipe(
+    const params = new HttpParams().set('page', '0').set('size', '1000');
+    return this.http.get<PageResponse<Application>>(this.apiUrl, { params }).pipe(
+      map((page) => page.content),
       tap((data) => {
         this.applicationsCache.set(data);
         this.cacheTimestamp = now;
@@ -41,8 +44,10 @@ export class ApplicationService {
   }
 
   getApplicationsByStatus(status: ApplicationStatus): Observable<Application[]> {
-    const params = new HttpParams().set('status', status);
-    return this.http.get<Application[]>(this.apiUrl, { params });
+    const params = new HttpParams().set('status', status).set('page', '0').set('size', '1000');
+    return this.http.get<PageResponse<Application>>(this.apiUrl, { params }).pipe(
+      map((page) => page.content)
+    );
   }
 
   getApplicationById(id: number): Observable<Application> {

@@ -37,3 +37,11 @@ export interface UpdateApplicationRequest {
   currentStatus?: ApplicationStatus;
   notes?: string;
 }
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}

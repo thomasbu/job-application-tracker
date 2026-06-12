@@ -3,6 +3,8 @@ package com.tracker.job_application_tracker.repository;
 import com.tracker.job_application_tracker.enums.ApplicationStatus;
 import com.tracker.job_application_tracker.model.Application;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -52,4 +54,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findByUserIdAndCurrentStatus(Long userId, ApplicationStatus status);
 
     Optional<Application> findByIdAndUserId(Long id, Long userId);
+
+    Page<Application> findByUserId(Long userId, Pageable pageable);
+
+    Page<Application> findByUserIdAndCurrentStatus(Long userId, ApplicationStatus status, Pageable pageable);
 }
