@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, tap, delay, map } from 'rxjs';
+import { Observable, of, tap, delay, map, catchError } from 'rxjs';
 import {
   Application,
   CreateApplicationRequest,
@@ -39,6 +39,10 @@ export class ApplicationService {
       tap((data) => {
         this.applicationsCache.set(data);
         this.cacheTimestamp = now;
+      }),
+      catchError((error) => {
+        this.invalidateCache();
+        throw error;
       })
     );
   }

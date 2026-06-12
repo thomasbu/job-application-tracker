@@ -95,6 +95,20 @@ describe('ApplicationService', () => {
     httpMock.expectNone(isGetAll);
   });
 
+  it('should invalidate cache and propagate error on network failure', () => {
+    let errorReceived = false;
+
+    // Premier appel — le serveur répond avec une erreur 500
+    service.getAllApplications().subscribe({ error: () => (errorReceived = true) });
+    httpMock.expectOne(isGetAll).flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
+
+    expect(errorReceived).toBe(true);
+
+    // Le cache doit être vide — le prochain appel refait bien une requête HTTP
+    service.getAllApplications().subscribe({ error: () => {} });
+    httpMock.expectOne(isGetAll).flush(toPage(mockApplications));
+  });
+
   it('should invalidate cache after createApplication', () => {
     // ARRANGE — on remplit le cache
     service.getAllApplications().subscribe();
